@@ -80,7 +80,7 @@ def actualizar_victima(id: int, victima: Victima):
 
 
 #Obtener asesinatos
-#corregido
+#actualizado
 @app.get("/asesinatos", tags=['Asesinatos'])
 def obtener_asesinatos():
     asesinatos = list(asesinatos_collection.find({},{"_id":0}))
@@ -100,6 +100,8 @@ def obtener_asesinato(id: int):
     asesinato = asesinatos_collection.find_one({"id": id},{"_id":0})
     if asesinato:
         asesinato["victima_id"] = str(victimas_collection.find_one({"id": asesinato["victima_id"]},{"_id":0}))
+        if asesinato["casos_relacionados"] is not None:
+                asesinato["casos_relacionados"] = [str(victimas_collection.find_one({"id": caso},{"_id":0})) for caso in asesinato["casos_relacionados"]]
         return JSONResponse(content=asesinato, status_code=200)
     else:
         return JSONResponse(content={"message":"Sin asesinato encontrado"}, status_code=404)
@@ -127,7 +129,7 @@ def eliminar_asesinato(id: int):
 #Actualizar Asesinato
 @app.put("/asesinatos/{id}", tags=['Asesinatos'])
 def actualizar_asesinato(id: int, asesinato: Asesinato):
-    asesinato_actualizado = collection.find_one_and_update(
+    asesinato_actualizado = asesinatos_collection.find_one_and_update(
         {"id": id},
         {"$set": asesinato.dict()},
         return_document=True
@@ -137,6 +139,9 @@ def actualizar_asesinato(id: int, asesinato: Asesinato):
         return {"message": "Asesinato Actualizado", "asesinato": asesinato_actualizado}
     else:
         raise HTTPException(status_code=404, detail="Asesinato no encontrado")
+
+
+#------------------------Filtros------------------------#
 
 
 #Obtener las familias de las victimas
