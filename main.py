@@ -166,7 +166,7 @@ def obtener_casos_relacionados():
 #filtrar victimas por orden de asesinato
 @app.get("/orden", tags=['Orden de Asesinatos'])
 def obtener_orden():
-    orden = list(victimas_collection.find({},{"id":1, "victima":1, "_id":0}).sort("id", pymongo.ASCENDING))
+    orden = list(victimas_collection.find({},{"id":1, "victima":1, "nombre":1, "familia":1, "edad": 1, "_id":0}).sort("id", pymongo.ASCENDING))
     if orden:
         return JSONResponse(content=orden, status_code=200)
     else:
