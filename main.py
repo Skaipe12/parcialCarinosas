@@ -79,17 +79,17 @@ def actualizar_victima(id: int, victima: Victima):
         raise JSONResponse(status_code=404, content={"message": "Victima no encontrada"})
 
 
-#Obtnener asesinatos
+#Obtener asesinatos
 #corregido
-@app.get("/asesinatos",tags=['Asesinatos'])
+@app.get("/asesinatos", tags=['Asesinatos'])
 def obtener_asesinatos():
-    asesinatos = list(asesinatos_collection.find({}))
+    asesinatos = list(asesinatos_collection.find({},{"_id":0}))
     if asesinatos:
         for asesinato in asesinatos:
-            asesinato["_id"] = str(asesinato["_id"])
+            asesinato["victima_id"] = str(victimas_collection.find_one({"id": asesinato["victima_id"]},{"_id":0}))
         return JSONResponse(content=asesinatos, status_code=200)
     else:
-        return JSONResponse(content={"message":"Sin asesinatos encontrados"}, status_code=404)
+        return JSONResponse(content={"message": "Sin asesinatos encontrados"}, status_code=404)
 
 
 #Obtener asesinato por id
