@@ -87,6 +87,8 @@ def obtener_asesinatos():
     if asesinatos:
         for asesinato in asesinatos:
             asesinato["victima_id"] = str(victimas_collection.find_one({"id": asesinato["victima_id"]},{"_id":0}))
+            if asesinato["casos_relacionados"] is not None:
+                asesinato["casos_relacionados"] = [str(victimas_collection.find_one({"id": caso},{"_id":0})) for caso in asesinato["casos_relacionados"]]
         return JSONResponse(content=asesinatos, status_code=200)
     else:
         return JSONResponse(content={"message": "Sin asesinatos encontrados"}, status_code=404)
@@ -95,9 +97,9 @@ def obtener_asesinatos():
 #Obtener asesinato por id
 @app.get("/asesinatos/{id}",tags=['Asesinatos'])
 def obtener_asesinato(id: int):
-    asesinato = asesinatos_collection.find_one({"id": id})
+    asesinato = asesinatos_collection.find_one({"id": id},{"_id":0})
     if asesinato:
-        asesinato["_id"] = str(asesinato["_id"])
+        asesinato["victima_id"] = str(victimas_collection.find_one({"id": asesinato["victima_id"]},{"_id":0}))
         return JSONResponse(content=asesinato, status_code=200)
     else:
         return JSONResponse(content={"message":"Sin asesinato encontrado"}, status_code=404)
@@ -106,13 +108,17 @@ def obtener_asesinato(id: int):
 #Registrar asesinato
 @app.post("/asesinatos",tags=['Asesinatos'])
 def registrar_asesinato(asesinato: Asesinato):
-    asesinatos_collection.insert_one(asesinato.dict())
-    return {"message": "Asesinato registrado"}
+    victima = victimas_collection.find_one({"id": asesinato.victima_id})
+    if victima is None:
+        raise HTTPException(status_code=404, detail="Víctima no encontrada")
+    else:
+        asesinatos_collection.insert_one(asesinato.dict())
+        return {"message": "Asesinato registrado"}
 
 #Eliminar Asesinato
 @app.delete("/asesinatos/{id}", tags=['Asesinatos'])
 def eliminar_asesinato(id: int):
-    asesinato = collection.find_one_and_delete({"id": id})
+    asesinato = asesinatos_collection.find_one_and_delete({"id": id})
     if asesinato:
         return {"message": "Asesinato eliminado"}
     else:
