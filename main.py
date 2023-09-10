@@ -145,7 +145,7 @@ def actualizar_asesinato(id: int, asesinato: Asesinato):
 
 
 #Obtener las familias de las victimas
-@app.get("/asesinatos/familias", tags=['Familias'])
+@app.get("/familias", tags=['Familias'])
 def obtener_familias():
     familias = list(victimas_collection.find({},{"familia":1, "_id":0}))
     if familias:
@@ -155,7 +155,7 @@ def obtener_familias():
 
 
 #Obtener los casos relacionados de las victimas que los tengan
-@app.get("/asesinatos/casos_relacionados", tags=['Casos Relacionados'])
+@app.get("/casos_relacionados", tags=['Casos Relacionados'])
 def obtener_casos_relacionados():
     casos_relacionados = list(asesinatos_collection.find({"casos_relacionados": {"$exists": True, "$ne": []}}, {"casos_relacionados":1, "_id":0}))
     if casos_relacionados:
@@ -164,16 +164,16 @@ def obtener_casos_relacionados():
         return JSONResponse(content={"message":"Sin casos relacionados encontrados"}, status_code=404)
 
 #filtrar victimas por orden de asesinato
-@app.get("/asesinatos/orden", tags=['Orden de Asesinatos'])
+@app.get("/orden", tags=['Orden de Asesinatos'])
 def obtener_orden():
-    orden = list(victimas_collection.find({},{"id":1, "victima":1, "_id":0}).sort("id", pymongo.ASCENDING))
+    orden = list(victimas_collection.find({},{"id":1, "victima":1, "nombre":1, "familia":1, "edad": 1, "_id":0}).sort("id", pymongo.ASCENDING))
     if orden:
         return JSONResponse(content=orden, status_code=200)
     else:
         return JSONResponse(content={"message":"Sin orden de asesinatos encontrados"}, status_code=404)
 
 #obtener las formas de asesinatos
-@app.get("/asesinatos/formas", tags=['Formas de Asesinatos'])
+@app.get("/formas", tags=['Formas de Asesinatos'])
 def obtener_formas():
     formas = list(asesinatos_collection.find({},{"forma_asesinato":1, "_id":0}))
     if formas:
