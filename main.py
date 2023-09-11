@@ -180,5 +180,25 @@ def obtener_formas():
         return JSONResponse(content=formas, status_code=200)
     else:
         return JSONResponse(content={"message":"Sin formas de asesinatos encontrados"}, status_code=404)
+
+# Obtener información de víctimas relacionadas a un caso de asesinato por ID del asesinato
+@app.get("/asesinatos/{id}/victimas_relacionadas", tags=['Asesinatos'])
+def obtener_victimas_relacionadas(id: int):
+    asesinato = asesinatos_collection.find_one({"id": id})
     
+    if asesinato:
+        casos_relacionados_ids = asesinato.get("casos_relacionados", [])
+        
+        if casos_relacionados_ids:
+            victimas_relacionadas = []
+            for victima_id in casos_relacionados_ids:
+                victima = victimas_collection.find_one({"id": victima_id}, {"_id": 0})
+                if victima:
+                    victimas_relacionadas.append(victima)
+            
+            return {"victimas_relacionadas": victimas_relacionadas}
+        else:
+            return {"message": "El caso de asesinato no tiene víctimas relacionadas."}
+    else:
+        raise HTTPException(status_code=404, detail="Asesinato no encontrado")
 #
